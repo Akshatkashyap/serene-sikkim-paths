@@ -16,7 +16,7 @@ const Navigation = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <Mountain className="h-8 w-8 text-monastery-red" />
+            <Mountain className="h-8 w-8 text-red-600" />
             <span className="text-xl font-bold text-foreground">
               Sikkim Monasteries
             </span>
@@ -30,7 +30,7 @@ const Navigation = () => {
               return (
                 <Link key={item.path} to={item.path}>
                   <Button
-                    variant={isActive ? "monastery" : "ghost"}
+                    variant={isActive ? "default" : "ghost"}
                     size="sm"
                     className="flex items-center gap-2"
                   >
@@ -42,7 +42,7 @@ const Navigation = () => {
             })}
           </div>
 
-          <Button variant="hero" size="sm">
+          <Button className="bg-gradient-to-r from-blue-600 to-red-600 text-white border border-white/20 hover:border-white/40" size="sm">
             Plan Your Visit
           </Button>
         </div>

@@ -53,7 +53,7 @@ const MonasteriesMap = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[800px]">
             {/* Map Container */}
-            <div className="lg:col-span-2 monastery-shadow rounded-lg overflow-hidden">
+            <div className="lg:col-span-2 shadow-lg rounded-lg overflow-hidden">
               <MapContainer
                 center={mapCenter}
                 zoom={10}
@@ -86,9 +86,9 @@ const MonasteriesMap = () => {
                           {monastery.description.substring(0, 100)}...
                         </p>
                         <Link to={`/monastery/${monastery.id}`}>
-                          <Button variant="monastery" size="sm" className="w-full">
+                          <button className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors">
                             View Details
-                          </Button>
+                          </button>
                         </Link>
                       </div>
                     </Popup>
@@ -99,7 +99,7 @@ const MonasteriesMap = () => {
 
             {/* Monastery Details Panel */}
             <div className="space-y-6">
-              <Card className="soft-shadow">
+              <Card className="shadow-lg">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-2xl">{selectedMonastery.name}</CardTitle>
@@ -120,19 +120,19 @@ const MonasteriesMap = () => {
                   
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-monastery-red" />
+                      <MapPin className="h-4 w-4 text-red-600" />
                       <span className="text-sm">{selectedMonastery.location}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Mountain className="h-4 w-4 text-mountain-blue" />
+                      <Mountain className="h-4 w-4 text-blue-600" />
                       <span className="text-sm">{selectedMonastery.altitude}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-monastery-gold" />
+                      <Clock className="h-4 w-4 text-yellow-600" />
                       <span className="text-sm">Founded {selectedMonastery.founded}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <NavigationIcon className="h-4 w-4 text-prayer-green" />
+                      <NavigationIcon className="h-4 w-4 text-green-600" />
                       <span className="text-sm">{selectedMonastery.nearestTown}</span>
                     </div>
                   </div>
@@ -146,7 +146,7 @@ const MonasteriesMap = () => {
                   </div>
 
                   <Link to={`/monastery/${selectedMonastery.id}`} className="block">
-                    <Button variant="monastery" className="w-full">
+                    <Button className="w-full bg-red-600 hover:bg-red-700">
                       View Full Details
                     </Button>
                   </Link>
@@ -154,15 +154,15 @@ const MonasteriesMap = () => {
               </Card>
 
               {/* Legend */}
-              <Card className="soft-shadow">
+              <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-lg">Map Legend</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 monastery-gradient rounded-full flex items-center justify-center">
-                        <div className="w-2 h-2 bg-monastery-white rounded-full"></div>
+                      <div className="w-6 h-6 bg-gradient-to-r from-red-600 to-yellow-500 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
                       </div>
                       <span className="text-sm">Monastery Location</span>
                     </div>
