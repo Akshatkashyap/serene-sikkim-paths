@@ -15,11 +15,17 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Monastery themed variants
+        monastery: "monastery-gradient text-monastery-white monastery-shadow hover:scale-105 monastery-transition font-semibold",
+        mountain: "mountain-gradient text-foreground soft-shadow hover:mountain-shadow monastery-transition",
+        prayer: "prayer-flags-gradient text-monastery-white monastery-shadow hover:scale-105 monastery-transition font-medium",
+        hero: "hero-gradient text-monastery-white border border-monastery-white/20 hover:border-monastery-white/40 monastery-shadow hover:scale-105 monastery-transition backdrop-blur-sm",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
+        xl: "h-14 rounded-lg px-12 text-lg",
         icon: "h-10 w-10",
       },
     },

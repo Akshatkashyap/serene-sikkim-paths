@@ -2,41 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Sikkim Monastery Design System - Inspired by Buddhist monasteries and Himalayan landscapes */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Base colors - Mountain and monastery inspired */
+    --background: 28 12% 97%;
+    --foreground: 15 8% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Card colors - Monastery halls */
+    --card: 28 15% 95%;
+    --card-foreground: 15 8% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Popover colors */
+    --popover: 28 15% 95%;
+    --popover-foreground: 15 8% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Deep monastery red */
+    --primary: 0 65% 45%;
+    --primary-foreground: 28 12% 97%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Saffron gold */
+    --secondary: 45 85% 65%;
+    --secondary-foreground: 15 8% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted - Mountain stone */
+    --muted: 28 8% 88%;
+    --muted-foreground: 15 6% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Prayer flag blue */
+    --accent: 210 55% 55%;
+    --accent-foreground: 28 12% 97%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 28 12% 97%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Border and input */
+    --border: 28 12% 85%;
+    --input: 28 12% 85%;
+    --ring: 0 65% 45%;
 
-    --radius: 0.5rem;
+    /* Monastery specific colors */
+    --monastery-red: 0 65% 45%;
+    --monastery-gold: 45 85% 65%;
+    --monastery-white: 28 12% 97%;
+    --mountain-blue: 210 55% 55%;
+    --prayer-green: 150 45% 55%;
+    --mountain-stone: 28 8% 75%;
+
+    /* Gradients */
+    --gradient-monastery: linear-gradient(135deg, hsl(var(--monastery-red)), hsl(var(--monastery-gold)));
+    --gradient-mountain: linear-gradient(180deg, hsl(var(--mountain-blue)), hsl(var(--monastery-white)));
+    --gradient-prayer-flags: linear-gradient(90deg, hsl(var(--mountain-blue)), hsl(var(--prayer-green)), hsl(var(--monastery-gold)), hsl(var(--monastery-red)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--mountain-blue) / 0.9), hsl(var(--monastery-red) / 0.8));
+
+    /* Shadows - Soft monastery lighting */
+    --shadow-monastery: 0 10px 30px -10px hsl(var(--monastery-red) / 0.3);
+    --shadow-mountain: 0 20px 40px -15px hsl(var(--mountain-blue) / 0.2);
+    --shadow-soft: 0 4px 20px -8px hsl(var(--foreground) / 0.1);
+
+    /* Animations */
+    --transition-monastery: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -56,33 +85,53 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark mode - Evening monastery */
+    --background: 15 15% 8%;
+    --foreground: 28 12% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 15 20% 12%;
+    --card-foreground: 28 12% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 15 20% 12%;
+    --popover-foreground: 28 12% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 0 70% 55%;
+    --primary-foreground: 28 12% 95%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 45 80% 60%;
+    --secondary-foreground: 15 15% 8%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 15 15% 18%;
+    --muted-foreground: 28 8% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 210 60% 60%;
+    --accent-foreground: 15 15% 8%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 28 12% 95%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 15 15% 20%;
+    --input: 15 15% 20%;
+    --ring: 0 70% 55%;
+
+    /* Dark mode monastery colors */
+    --monastery-red: 0 70% 55%;
+    --monastery-gold: 45 80% 60%;
+    --monastery-white: 28 12% 95%;
+    --mountain-blue: 210 60% 60%;
+    --prayer-green: 150 50% 60%;
+    --mountain-stone: 28 10% 25%;
+
+    /* Dark gradients */
+    --gradient-monastery: linear-gradient(135deg, hsl(var(--monastery-red)), hsl(var(--monastery-gold)));
+    --gradient-mountain: linear-gradient(180deg, hsl(var(--mountain-blue) / 0.8), hsl(var(--background)));
+    --gradient-prayer-flags: linear-gradient(90deg, hsl(var(--mountain-blue)), hsl(var(--prayer-green)), hsl(var(--monastery-gold)), hsl(var(--monastery-red)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--mountain-blue) / 0.9), hsl(var(--monastery-red) / 0.8));
+
+    /* Dark shadows */
+    --shadow-monastery: 0 10px 30px -10px hsl(var(--monastery-red) / 0.4);
+    --shadow-mountain: 0 20px 40px -15px hsl(var(--mountain-blue) / 0.3);
+    --shadow-soft: 0 4px 20px -8px hsl(0 0% 0% / 0.3);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -100,6 +149,58 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Custom scrollbar for monastery theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--monastery-red) / 0.6);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--monastery-red) / 0.8);
+  }
+}
+
+@layer utilities {
+  .monastery-gradient {
+    background: var(--gradient-monastery);
+  }
+
+  .mountain-gradient {
+    background: var(--gradient-mountain);
+  }
+
+  .prayer-flags-gradient {
+    background: var(--gradient-prayer-flags);
+  }
+
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+
+  .monastery-shadow {
+    box-shadow: var(--shadow-monastery);
+  }
+
+  .mountain-shadow {
+    box-shadow: var(--shadow-mountain);
+  }
+
+  .soft-shadow {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .monastery-transition {
+    transition: var(--transition-monastery);
   }
 }
