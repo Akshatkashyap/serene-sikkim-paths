@@ -3,10 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mountain, MapPin, Camera, Users } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import heroImage from "@/assets/hero-monastery.jpg";
-import monastery1 from "@/assets/monastery-1.jpg";
-import monastery2 from "@/assets/monastery-2.jpg";
-import monastery3 from "@/assets/monastery-3.jpg";
 
 const Home = () => {
   const features = [
@@ -40,16 +36,16 @@ const Home = () => {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroImage})` }}
+          style={{ backgroundImage: `url(/hero-monastery.jpg)` }}
         />
-        <div className="absolute inset-0 hero-gradient" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-red-900/70" />
         
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
-          <h1 className="text-5xl md:text-7xl font-bold text-monastery-white mb-6 monastery-transition">
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 transition-all duration-500">
             Discover Sikkim's
-            <span className="block text-monastery-gold">Sacred Monasteries</span>
+            <span className="block text-yellow-400">Sacred Monasteries</span>
           </h1>
-          <p className="text-xl md:text-2xl text-monastery-white/90 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
             Journey through ancient Buddhist temples hidden in the Himalayas. 
             Explore both famous sanctuaries and secret spiritual havens.
           </p>
@@ -86,10 +82,10 @@ const Home = () => {
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <Card key={index} className="soft-shadow hover:monastery-shadow monastery-transition">
+                <Card key={index} className="shadow-lg hover:shadow-xl transition-all duration-300">
                   <CardContent className="p-6 text-center">
-                    <div className="w-16 h-16 monastery-gradient rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Icon className="h-8 w-8 text-monastery-white" />
+                    <div className="w-16 h-16 bg-gradient-to-r from-red-600 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Icon className="h-8 w-8 text-white" />
                     </div>
                     <h3 className="text-xl font-semibold text-foreground mb-2">
                       {feature.title}
@@ -119,16 +115,16 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { image: monastery1, title: "Ancient Hidden Monastery", desc: "Weathered by time but rich in spirit" },
-              { image: monastery2, title: "Mountain Sanctuary", desc: "Colorful prayer flags dancing in mountain breeze" },
-              { image: monastery3, title: "Cliffside Retreat", desc: "Perched dramatically above sacred valleys" }
+              { image: "/monastery-1.jpg", title: "Ancient Hidden Monastery", desc: "Weathered by time but rich in spirit" },
+              { image: "/monastery-2.jpg", title: "Mountain Sanctuary", desc: "Colorful prayer flags dancing in mountain breeze" },
+              { image: "/monastery-3.jpg", title: "Cliffside Retreat", desc: "Perched dramatically above sacred valleys" }
             ].map((item, index) => (
-              <Card key={index} className="overflow-hidden soft-shadow hover:monastery-shadow monastery-transition">
+              <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                 <div className="aspect-video overflow-hidden">
                   <img 
                     src={item.image} 
                     alt={item.title}
-                    className="w-full h-full object-cover hover:scale-105 monastery-transition"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <CardContent className="p-6">
