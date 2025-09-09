@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Navigation from "@/components/Navigation";
+import LazyModel3D from "@/components/LazyModel3D";
 import { getMonasteryById } from "@/data/monasteries";
 import { 
   MapPin, 
@@ -132,24 +133,60 @@ const MonasteryDetail = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl flex items-center gap-2">
                     <Camera className="h-6 w-6 text-mountain-blue" />
-                    Virtual Experience
+                    Immersive 3D Virtual Tour
                   </CardTitle>
+                  <p className="text-muted-foreground">
+                    Experience the monastery's sacred architecture in stunning 3D detail
+                  </p>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-muted/50 rounded-lg aspect-video flex items-center justify-center mb-4">
-                    <div className="text-center">
-                      <Camera className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-foreground mb-2">
-                        3D Virtual Tour Coming Soon
-                      </h3>
-                      <p className="text-muted-foreground">
-                        Experience this monastery in immersive 3D
-                      </p>
+                  {(monastery.id === 'rumtek' || monastery.id === 'pemayangtse') ? (
+                    <>
+                      <LazyModel3D 
+                        modelPath="/model.glb" 
+                        className="rounded-lg overflow-hidden"
+                      />
+                      
+                      <div className="mt-6 p-4 bg-gradient-to-r from-monastery-red/10 to-mountain-blue/10 rounded-lg">
+                        <h4 className="font-semibold mb-2 flex items-center gap-2">
+                          🏛️ Virtual Tour Features
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-monastery-red rounded-full"></span>
+                            <span>360° Interactive Exploration</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-mountain-blue rounded-full"></span>
+                            <span>Detailed Architectural Views</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-prayer-green rounded-full"></span>
+                            <span>Sacred Space Visualization</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-monastery-gold rounded-full"></span>
+                            <span>Immersive Lighting Effects</span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="bg-muted/50 rounded-lg aspect-video flex items-center justify-center">
+                      <div className="text-center">
+                        <Camera className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-foreground mb-2">
+                          3D Virtual Tour Coming Soon
+                        </h3>
+                        <p className="text-muted-foreground">
+                          We're working on creating an immersive 3D experience for this monastery
+                        </p>
+                        <div className="mt-4 text-sm text-monastery-red font-medium">
+                          Available now for Rumtek & Pemayangtse Monasteries
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <Button variant="monastery" className="w-full" disabled>
-                    Launch Virtual Tour (Coming Soon)
-                  </Button>
+                  )}
                 </CardContent>
               </Card>
             </div>
