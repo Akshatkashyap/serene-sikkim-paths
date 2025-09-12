@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Mountain, Map, List, Home, Menu, X } from "lucide-react";
+import { Map, List, Home, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./LanguageSelector";
@@ -25,19 +25,23 @@ const Navigation = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2" onClick={closeSheet}>
-            <Mountain className="h-7 w-7 lg:h-8 lg:w-8 text-red-600" />
+            <img 
+              src="/icon.png" 
+              alt="Seek Sikkim Logo" 
+              className="h-7 w-7 lg:h-10 lg:w-10 object-contain"
+            />
             <span className="text-lg lg:text-xl font-bold text-foreground">
               <span className="hidden sm:inline">Seek Sikkim</span>
               <span className="sm:hidden">Sikkim</span>
             </span>
           </Link>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4 lg:gap-6">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               const Icon = item.icon;
-              
+
               return (
                 <Link key={item.path} to={item.path}>
                   <Button
@@ -51,15 +55,28 @@ const Navigation = () => {
                 </Link>
               );
             })}
+            
+            {/* Desktop Language Selector */}
+            <LanguageSelector />
           </div>
 
-          {/* Desktop Language Selector and CTA Button */}
-          <div className="hidden md:flex items-center gap-3">
-            <LanguageSelector />
-            <Button className="bg-gradient-to-r from-blue-600 to-red-600 text-white border border-white/20 hover:border-white/40" size="sm">
-              Plan Your Visit
-            </Button>
+
+          {/* Desktop CTA Button */}
+          <div className="hidden md:block">
+            <Link to="/plan-visit">
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-blue-600 to-red-600 text-white border border-white/20 hover:border-white/40 
+                 transition-all duration-200 ease-in-out 
+                 hover:shadow-md 
+                 active:scale-95"
+              >
+                Plan Your Visit
+              </Button>
+            </Link>
+
           </div>
+
 
           {/* Mobile Menu */}
           <div className="md:hidden">
@@ -74,7 +91,11 @@ const Navigation = () => {
                 <div className="flex flex-col space-y-6 mt-6">
                   {/* Mobile Logo */}
                   <Link to="/" className="flex items-center gap-2 pb-4 border-b" onClick={closeSheet}>
-                    <Mountain className="h-6 w-6 text-red-600" />
+                    <img 
+                      src="/icon.png" 
+                      alt="Seek Sikkim Logo" 
+                      className="h-6 w-6 object-contain"
+                    />
                     <span className="text-lg font-bold text-foreground">
                       Sikkim Monasteries
                     </span>
@@ -85,7 +106,7 @@ const Navigation = () => {
                     {navItems.map((item) => {
                       const isActive = location.pathname === item.path;
                       const Icon = item.icon;
-                      
+
                       return (
                         <Link key={item.path} to={item.path} onClick={closeSheet}>
                           <Button
@@ -110,12 +131,13 @@ const Navigation = () => {
 
                   {/* Mobile CTA Button */}
                   <div className="pt-4 border-t">
-                    <Button 
-                      className="w-full bg-gradient-to-r from-blue-600 to-red-600 text-white border border-white/20 hover:border-white/40" 
-                      onClick={closeSheet}
-                    >
-                      Plan Your Visit
-                    </Button>
+                    <Link to="/plan-visit" onClick={closeSheet}>
+                      <Button
+                        className="w-full bg-gradient-to-r from-blue-600 to-red-600 text-white border border-white/20 hover:border-white/40"
+                      >
+                        Plan Your Visit
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </SheetContent>
