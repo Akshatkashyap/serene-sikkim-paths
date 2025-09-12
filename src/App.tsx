@@ -24,7 +24,7 @@ const App = () => (
           <Route path="/map" element={<MonasteriesMap />} />
           <Route path="/monastery/:id" element={<MonasteryDetail />} />
           <Route path="/model-viewer" element={<ModelViewer />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
