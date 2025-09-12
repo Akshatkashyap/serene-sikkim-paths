@@ -1,11 +1,15 @@
 import { useParams, Link, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Navigation from "@/components/Navigation";
 import LazyModel3D from "@/components/LazyModel3D";
+import { AudioControls } from "@/components/AudioControls";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { getMonasteryById } from "@/data/monasteries";
+import { generateFullNarration } from "@/data/monasteryNarrations";
 import { 
   MapPin, 
   Mountain, 
@@ -17,7 +21,8 @@ import {
   ArrowLeft,
   Camera,
   Users,
-  TreePine
+  TreePine,
+  Volume2
 } from "lucide-react";
 
 const MonasteryDetail = () => {
@@ -32,6 +37,52 @@ const MonasteryDetail = () => {
   if (!monastery) {
     return <Navigate to="/monasteries" replace />;
   }
+
+  // Initialize text-to-speech with auto-play
+  const {
+    speak,
+    pause,
+    resume,
+    stop,
+    isPlaying,
+    isPaused,
+    isSupported,
+    speed,
+    setSpeed,
+    volume,
+    setVolume,
+    voices,
+    currentVoice,
+    setVoice
+  } = useTextToSpeech({
+    speed: 0.9, // Slightly slower for better comprehension
+    volume: 0.8
+  });
+
+  // Generate narration text
+  const narrationText = generateFullNarration(monastery);
+
+  // Auto-start narration when page loads
+  useEffect(() => {
+    if (isSupported && narrationText) {
+      // Small delay to ensure page is loaded
+      const timer = setTimeout(() => {
+        speak(narrationText);
+      }, 1500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [monastery.id, isSupported, narrationText, speak]);
+
+  const handlePlayNarration = () => {
+    if (isPlaying && !isPaused) {
+      pause();
+    } else if (isPaused) {
+      resume();
+    } else {
+      speak(narrationText);
+    }
+  };
 
   const accessibilityConfig = {
     easy: { color: "text-green-600", icon: "🟢", label: "Easy Access" },
@@ -74,9 +125,37 @@ const MonasteryDetail = () => {
             <h1 className="text-4xl md:text-6xl font-bold text-monastery-white mb-4">
               {monastery.name}
             </h1>
-            <p className="text-xl text-monastery-white/90 max-w-2xl">
+            <p className="text-xl text-monastery-white/90 max-w-2xl mb-6">
               {monastery.description}
             </p>
+            
+            {/* Audio Controls in Hero Section */}
+            {isSupported && (
+              <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 max-w-2xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <Volume2 className="h-5 w-5 text-monastery-white" />
+                  <span className="text-monastery-white font-medium">Audio Guide</span>
+                </div>
+                <AudioControls
+                  isPlaying={isPlaying}
+                  isPaused={isPaused}
+                  isSupported={isSupported}
+                  speed={speed}
+                  volume={volume}
+                  voices={voices}
+                  currentVoice={currentVoice}
+                  onPlay={handlePlayNarration}
+                  onPause={pause}
+                  onResume={resume}
+                  onStop={stop}
+                  onSpeedChange={setSpeed}
+                  onVolumeChange={setVolume}
+                  onVoiceChange={setVoice}
+                  className="bg-white/90 backdrop-blur-sm"
+                  showAdvancedControls={true}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -84,6 +163,40 @@ const MonasteryDetail = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
+              {/* Audio Guide Card - Mobile Alternative */}
+              {isSupported && (
+                <Card className="soft-shadow lg:hidden">
+                  <CardHeader>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <Volume2 className="h-5 w-5 text-monastery-red" />
+                      Audio Guide
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Listen to a detailed narration about {monastery.name}
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <AudioControls
+                      isPlaying={isPlaying}
+                      isPaused={isPaused}
+                      isSupported={isSupported}
+                      speed={speed}
+                      volume={volume}
+                      voices={voices}
+                      currentVoice={currentVoice}
+                      onPlay={handlePlayNarration}
+                      onPause={pause}
+                      onResume={resume}
+                      onStop={stop}
+                      onSpeedChange={setSpeed}
+                      onVolumeChange={setVolume}
+                      onVoiceChange={setVoice}
+                      showAdvancedControls={true}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Overview */}
               <Card className="soft-shadow">
                 <CardHeader>
@@ -193,6 +306,49 @@ const MonasteryDetail = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {/* Audio Guide Card */}
+              {isSupported && (
+                <Card className="soft-shadow">
+                  <CardHeader>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <Volume2 className="h-5 w-5 text-monastery-red" />
+                      Audio Guide
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Listen to a detailed narration about {monastery.name}
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <AudioControls
+                      isPlaying={isPlaying}
+                      isPaused={isPaused}
+                      isSupported={isSupported}
+                      speed={speed}
+                      volume={volume}
+                      voices={voices}
+                      currentVoice={currentVoice}
+                      onPlay={handlePlayNarration}
+                      onPause={pause}
+                      onResume={resume}
+                      onStop={stop}
+                      onSpeedChange={setSpeed}
+                      onVolumeChange={setVolume}
+                      onVoiceChange={setVoice}
+                      showAdvancedControls={true}
+                    />
+                    
+                    {/* Quick narration info */}
+                    <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <div>🔊 Auto-narration starts when page loads</div>
+                        <div>⏱️ Estimated duration: {Math.ceil(narrationText.length / 200)} minutes</div>
+                        <div>🎧 Best experienced with headphones</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Quick Info */}
               <Card className="soft-shadow">
                 <CardHeader>

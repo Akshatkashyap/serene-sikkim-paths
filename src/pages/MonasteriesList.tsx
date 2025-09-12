@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,13 +6,49 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navigation from "@/components/Navigation";
+import { AudioControls } from "@/components/AudioControls";
 import { monasteries } from "@/data/monasteries";
-import { MapPin, Mountain, Clock, Search, Filter } from "lucide-react";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { generateShortNarration } from "@/data/monasteryNarrations";
+import { MapPin, Mountain, Clock, Search, Filter, Volume2, VolumeX } from "lucide-react";
 
 const MonasteriesList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "famous" | "hidden">("all");
   const [filterAccessibility, setFilterAccessibility] = useState<"all" | "easy" | "moderate" | "difficult">("all");
+  const [autoNarrationEnabled, setAutoNarrationEnabled] = useState(true);
+
+  const {
+    isSupported,
+    isPlaying,
+    isPaused,
+    volume,
+    speed,
+    selectedVoice,
+    voices,
+    speak,
+    pause,
+    resume,
+    stop,
+    setVolume,
+    setSpeed,
+    setVoice,
+  } = useTextToSpeech();
+
+  // Auto-narrate page introduction
+  useEffect(() => {
+    if (isSupported && autoNarrationEnabled) {
+      const introText = `Welcome to the Monasteries of Sikkim page. Here you can explore all ${monasteries.length} sacred monasteries across the Land of the Thunder Dragon. Use the search and filter options to find monasteries by name, location, or features.`;
+      setTimeout(() => speak(introText), 1000);
+    }
+  }, [isSupported, autoNarrationEnabled, speak]);
+
+  const handleMonasteryNarration = (monastery: typeof monasteries[0]) => {
+    if (isSupported) {
+      const narrationText = generateShortNarration(monastery);
+      speak(narrationText);
+    }
+  };
 
   const filteredMonasteries = monasteries.filter(monastery => {
     const matchesSearch = monastery.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -32,9 +68,41 @@ const MonasteriesList = () => {
       <div className="pt-20 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              All Monasteries in Sikkim
-            </h1>
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <h1 className="text-4xl font-bold text-foreground">
+                All Monasteries in Sikkim
+              </h1>
+              {isSupported && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAutoNarrationEnabled(!autoNarrationEnabled)}
+                    className="p-2"
+                    title={autoNarrationEnabled ? "Disable auto-narration" : "Enable auto-narration"}
+                  >
+                    {autoNarrationEnabled ? (
+                      <Volume2 className="h-5 w-5 text-blue-600" />
+                    ) : (
+                      <VolumeX className="h-5 w-5 text-gray-400" />
+                    )}
+                  </Button>
+                  <AudioControls
+                    isPlaying={isPlaying}
+                    isPaused={isPaused}
+                    volume={volume}
+                    speed={speed}
+                    selectedVoice={selectedVoice}
+                    voices={voices}
+                    onPlayPause={() => isPlaying ? (isPaused ? resume() : pause()) : undefined}
+                    onStop={stop}
+                    onVolumeChange={setVolume}
+                    onSpeedChange={setSpeed}
+                    onVoiceChange={setVoice}
+                  />
+                </div>
+              )}
+            </div>
             <p className="text-xl text-muted-foreground">
               Discover sacred sites across the Land of the Thunder Dragon
             </p>
@@ -99,9 +167,22 @@ const MonasteriesList = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-xl">{monastery.name}</CardTitle>
-                    <Badge variant={monastery.type === 'famous' ? 'default' : 'secondary'}>
-                      {monastery.type}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={monastery.type === 'famous' ? 'default' : 'secondary'}>
+                        {monastery.type}
+                      </Badge>
+                      {isSupported && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleMonasteryNarration(monastery)}
+                          className="p-1 h-auto"
+                          title="Listen to description"
+                        >
+                          <Volume2 className="h-4 w-4 text-blue-600" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 

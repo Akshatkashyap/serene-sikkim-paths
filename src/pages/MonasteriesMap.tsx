@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import Navigation from "@/components/Navigation";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { monasteries } from "@/data/monasteries";
-import { MapPin, Mountain, Clock, Navigation as NavigationIcon } from "lucide-react";
+import { generateMapMarkerNarration } from "@/data/monasteryNarrations";
+import { MapPin, Mountain, Clock, Navigation as NavigationIcon, Volume2, VolumeX } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
@@ -69,6 +71,42 @@ const MonasteriesMap = () => {
   const [userLocation, setUserLocation] = useState<L.LatLng | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [autoNarrationEnabled, setAutoNarrationEnabled] = useState(true);
+
+  // Text-to-speech hook for map markers
+  const {
+    speak,
+    stop,
+    isPlaying,
+    isSupported,
+    speed,
+    setSpeed,
+    volume,
+    setVolume
+  } = useTextToSpeech({
+    speed: 1.0,
+    volume: 0.7
+  });
+
+  // Handle monastery selection and narration
+  const handleMonasterySelect = (monastery: typeof monasteries[0]) => {
+    setSelectedMonastery(monastery);
+    
+    // Auto-narrate when a monastery is selected
+    if (autoNarrationEnabled && isSupported) {
+      stop(); // Stop any current narration
+      const narrationText = generateMapMarkerNarration(monastery);
+      setTimeout(() => speak(narrationText), 300); // Small delay for better UX
+    }
+  };
+
+  // Narrate selected monastery on load
+  useEffect(() => {
+    if (autoNarrationEnabled && isSupported && selectedMonastery) {
+      const narrationText = generateMapMarkerNarration(selectedMonastery);
+      setTimeout(() => speak(narrationText), 1000);
+    }
+  }, [autoNarrationEnabled, isSupported, speak, selectedMonastery]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim() || isSearching) return;
@@ -101,6 +139,39 @@ const MonasteriesMap = () => {
             <p className="text-lg md:text-xl text-muted-foreground">
               Navigate through sacred sites on our interactive map
             </p>
+
+            {/* Audio Narration Toggle */}
+            {isSupported && (
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAutoNarrationEnabled(!autoNarrationEnabled)}
+                  className={`flex items-center gap-2 ${autoNarrationEnabled ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}
+                >
+                  {autoNarrationEnabled ? (
+                    <Volume2 className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <VolumeX className="h-4 w-4 text-red-600" />
+                  )}
+                  <span className="text-sm">
+                    Audio Guide {autoNarrationEnabled ? 'ON' : 'OFF'}
+                  </span>
+                </Button>
+                
+                {isPlaying && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={stop}
+                    className="flex items-center gap-2"
+                  >
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm">Stop Narration</span>
+                  </Button>
+                )}
+              </div>
+            )}
 
             {/* Search bar */}
             <div className="mt-4 max-w-md mx-auto">
@@ -224,14 +295,30 @@ const MonasteriesMap = () => {
                         position={monastery.coordinates}
                         icon={monasteryIcon}
                         eventHandlers={{
-                          click: () => setSelectedMonastery(monastery),
+                          click: () => handleMonasterySelect(monastery),
                         }}
                       >
                         <Popup maxWidth={300} minWidth={250}>
                           <div className="p-2">
-                            <h3 className="font-semibold text-lg mb-2">
-                              {monastery.name}
-                            </h3>
+                            <div className="flex items-start justify-between mb-2">
+                              <h3 className="font-semibold text-lg">
+                                {monastery.name}
+                              </h3>
+                              {isSupported && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const narrationText = generateMapMarkerNarration(monastery);
+                                    speak(narrationText);
+                                  }}
+                                  className="p-1 h-auto"
+                                  title="Listen to description"
+                                >
+                                  <Volume2 className="h-4 w-4 text-blue-600" />
+                                </Button>
+                              )}
+                            </div>
                             <img
                               src={monastery.image}
                               alt={monastery.name}
@@ -240,11 +327,18 @@ const MonasteriesMap = () => {
                             <p className="text-sm text-gray-600 mb-3">
                               {monastery.description.substring(0, 100)}...
                             </p>
-                            <Link to={`/monastery/${monastery.id}`}>
-                              <button className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm">
-                                View Details
-                              </button>
-                            </Link>
+                            <div className="flex gap-2">
+                              <Link to={`/monastery/${monastery.id}`} className="flex-1">
+                                <button className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm">
+                                  View Details
+                                </button>
+                              </Link>
+                              {isSupported && autoNarrationEnabled && (
+                                <div className="flex items-center px-2 bg-blue-50 rounded">
+                                  <Volume2 className="h-3 w-3 text-blue-600" />
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </Popup>
                       </Marker>
