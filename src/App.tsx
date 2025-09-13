@@ -9,6 +9,7 @@ import MonasteriesMap from "./pages/MonasteriesMap";
 import MonasteryDetail from "./pages/MonasteryDetail";
 import ModelViewer from "./pages/ModelViewer";
 import NotFound from "./pages/NotFound";
+import './i18n';
 
 const queryClient = new QueryClient();
 

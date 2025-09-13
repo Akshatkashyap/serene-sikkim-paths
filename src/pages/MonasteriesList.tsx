@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ import { generateShortNarration } from "@/data/monasteryNarrations";
 import { MapPin, Mountain, Clock, Search, Filter, Volume2, VolumeX } from "lucide-react";
 
 const MonasteriesList = () => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "famous" | "hidden">("all");
   const [filterAccessibility, setFilterAccessibility] = useState<"all" | "easy" | "moderate" | "difficult">("all");
@@ -38,10 +40,10 @@ const MonasteriesList = () => {
   // Auto-narrate page introduction
   useEffect(() => {
     if (isSupported && autoNarrationEnabled) {
-      const introText = `Welcome to the Monasteries of Sikkim page. Here you can explore all ${monasteries.length} sacred monasteries across the Land of the Thunder Dragon. Use the search and filter options to find monasteries by name, location, or features.`;
+      const introText = t('monasteries.introNarration', { count: monasteries.length });
       setTimeout(() => speak(introText), 1000);
     }
-  }, [isSupported, autoNarrationEnabled, speak]);
+  }, [isSupported, autoNarrationEnabled, speak, t]);
 
   const handleMonasteryNarration = (monastery: typeof monasteries[0]) => {
     if (isSupported) {
@@ -70,7 +72,7 @@ const MonasteriesList = () => {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-4 mb-4">
               <h1 className="text-4xl font-bold text-foreground">
-                All Monasteries in Sikkim
+                {t('monasteries.title')}
               </h1>
               {isSupported && (
                 <div className="flex items-center gap-2">
@@ -79,7 +81,7 @@ const MonasteriesList = () => {
                     size="sm"
                     onClick={() => setAutoNarrationEnabled(!autoNarrationEnabled)}
                     className="p-2"
-                    title={autoNarrationEnabled ? "Disable auto-narration" : "Enable auto-narration"}
+                    title={autoNarrationEnabled ? t('monasteries.disableAutoNarration') : t('monasteries.enableAutoNarration')}
                   >
                     {autoNarrationEnabled ? (
                       <Volume2 className="h-5 w-5 text-blue-600" />
@@ -104,7 +106,7 @@ const MonasteriesList = () => {
               )}
             </div>
             <p className="text-xl text-muted-foreground">
-              Discover sacred sites across the Land of the Thunder Dragon
+              {t('monasteries.subtitle')}
             </p>
           </div>
 
@@ -114,7 +116,7 @@ const MonasteriesList = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search monasteries by name, location, or description..."
+                  placeholder={t('monasteries.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -124,31 +126,31 @@ const MonasteriesList = () => {
                 <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
                   <SelectTrigger className="w-[140px]">
                     <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Type" />
+                    <SelectValue placeholder={t('monasteries.filterType')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="famous">Famous</SelectItem>
-                    <SelectItem value="hidden">Hidden</SelectItem>
+                    <SelectItem value="all">{t('monasteries.allTypes')}</SelectItem>
+                    <SelectItem value="famous">{t('monasteries.famous')}</SelectItem>
+                    <SelectItem value="hidden">{t('monasteries.hidden')}</SelectItem>
                   </SelectContent>
                 </Select>
                 
                 <Select value={filterAccessibility} onValueChange={(value: any) => setFilterAccessibility(value)}>
                   <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Accessibility" />
+                    <SelectValue placeholder={t('monasteries.filterAccessibility')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Levels</SelectItem>
-                    <SelectItem value="easy">Easy Access</SelectItem>
-                    <SelectItem value="moderate">Moderate</SelectItem>
-                    <SelectItem value="difficult">Difficult</SelectItem>
+                    <SelectItem value="all">{t('monasteries.allLevels')}</SelectItem>
+                    <SelectItem value="easy">{t('monasteries.easyAccess')}</SelectItem>
+                    <SelectItem value="moderate">{t('monasteries.moderate')}</SelectItem>
+                    <SelectItem value="difficult">{t('monasteries.difficult')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             
             <div className="text-sm text-muted-foreground">
-              Showing {filteredMonasteries.length} of {monasteries.length} monasteries
+              {t('monasteries.showingResults', { current: filteredMonasteries.length, total: monasteries.length })}
             </div>
           </div>
 
@@ -169,7 +171,7 @@ const MonasteriesList = () => {
                     <CardTitle className="text-xl">{monastery.name}</CardTitle>
                     <div className="flex items-center gap-2">
                       <Badge variant={monastery.type === 'famous' ? 'default' : 'secondary'}>
-                        {monastery.type}
+                        {t(`monasteries.${monastery.type}`)}
                       </Badge>
                       {isSupported && (
                         <Button
@@ -177,7 +179,7 @@ const MonasteriesList = () => {
                           size="sm"
                           onClick={() => handleMonasteryNarration(monastery)}
                           className="p-1 h-auto"
-                          title="Listen to description"
+                          title={t('monasteries.listenToDescription')}
                         >
                           <Volume2 className="h-4 w-4 text-blue-600" />
                         </Button>
@@ -202,7 +204,7 @@ const MonasteriesList = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-monastery-gold" />
-                      <span className="text-sm">Founded {monastery.founded}</span>
+                      <span className="text-sm">{t('monasteries.founded')} {monastery.founded}</span>
                     </div>
                   </div>
 
@@ -214,7 +216,7 @@ const MonasteriesList = () => {
                     ))}
                     {monastery.features.length > 3 && (
                       <Badge variant="outline" className="text-xs">
-                        +{monastery.features.length - 3} more
+                        +{monastery.features.length - 3} {t('monasteries.more')}
                       </Badge>
                     )}
                   </div>
@@ -222,7 +224,7 @@ const MonasteriesList = () => {
                   <div className="flex gap-2">
                     <Link to={`/monastery/${monastery.id}`} className="flex-1">
                       <Button variant="monastery" className="w-full">
-                        Learn More
+                        {t('monasteries.learnMore')}
                       </Button>
                     </Link>
                     <Link to={`/map?monastery=${monastery.id}`}>
@@ -239,10 +241,10 @@ const MonasteriesList = () => {
           {filteredMonasteries.length === 0 && (
             <div className="text-center py-12">
               <h3 className="text-2xl font-semibold text-foreground mb-4">
-                No monasteries found
+                {t('monasteries.noResults')}
               </h3>
               <p className="text-muted-foreground mb-6">
-                Try adjusting your search terms or filters
+                {t('monasteries.adjustFilters')}
               </p>
               <Button 
                 variant="monastery" 
@@ -252,7 +254,7 @@ const MonasteriesList = () => {
                   setFilterAccessibility("all");
                 }}
               >
-                Clear All Filters
+                {t('monasteries.clearFilters')}
               </Button>
             </div>
           )}
