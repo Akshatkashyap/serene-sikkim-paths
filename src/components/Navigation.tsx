@@ -28,13 +28,13 @@ const Navigation = () => {
               <span className="sm:hidden">Sikkim</span>
             </span>
           </Link>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4 lg:gap-6">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               const Icon = item.icon;
-              
+
               return (
                 <Link key={item.path} to={item.path}>
                   <Button
@@ -52,10 +52,19 @@ const Navigation = () => {
 
           {/* Desktop CTA Button */}
           <div className="hidden md:block">
-            <Button className="bg-gradient-to-r from-blue-600 to-red-600 text-white border border-white/20 hover:border-white/40" size="sm">
-              Plan Your Visit
-            </Button>
+            <Link to="/plan-visit">
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-blue-600 to-red-600 text-white border border-white/20 hover:border-white/40 
+                 transition-all duration-200 ease-in-out 
+                 hover:shadow-md 
+                 active:scale-95"
+              >
+                Plan Your Visit
+              </Button>
+            </Link>
           </div>
+
 
           {/* Mobile Menu */}
           <div className="md:hidden">
@@ -81,7 +90,7 @@ const Navigation = () => {
                     {navItems.map((item) => {
                       const isActive = location.pathname === item.path;
                       const Icon = item.icon;
-                      
+
                       return (
                         <Link key={item.path} to={item.path} onClick={closeSheet}>
                           <Button
@@ -99,12 +108,13 @@ const Navigation = () => {
 
                   {/* Mobile CTA Button */}
                   <div className="pt-4 border-t">
-                    <Button 
-                      className="w-full bg-gradient-to-r from-blue-600 to-red-600 text-white border border-white/20 hover:border-white/40" 
-                      onClick={closeSheet}
-                    >
-                      Plan Your Visit
-                    </Button>
+                    <Link to="/plan-visit" onClick={closeSheet}>
+                      <Button
+                        className="w-full bg-gradient-to-r from-blue-600 to-red-600 text-white border border-white/20 hover:border-white/40"
+                      >
+                        Plan Your Visit
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </SheetContent>

@@ -42,23 +42,93 @@ const monasteryIcon = new L.Icon({
 // Routing Component
 const RoutingMachine = ({ from, to }: { from: L.LatLng; to: L.LatLng }) => {
   const map = useMap();
-
+  
   useEffect(() => {
     if (!map) return;
 
-    const routingControl = L.Routing.control({
-      waypoints: [from, to],
-      lineOptions: {
-        styles: [{ color: "#dc2626", weight: 5 }],
-        extendToWaypoints: true,
-        missingRouteTolerance: 0,
-      },
-      show: false,
-      addWaypoints: false,
-    }).addTo(map);
+    // Try to get existing control
+    let routingControl = (map as any)._routingControl;
+
+    if (!routingControl) {
+      // Create new control if none exists
+      routingControl = L.Routing.control({
+        waypoints: [from, to],
+        lineOptions: {
+          styles: [{ color: "#dc2626", weight: 5 }],
+          extendToWaypoints: true,
+          missingRouteTolerance: 0,
+        },
+        show: false,
+        addWaypoints: false,
+      });
+      routingControl.addTo(map);
+      (map as any)._routingControl = routingControl;
+    } else {
+      // Update existing control with new waypoints
+      routingControl.setWaypoints([from, to]);
+    }
+
+    // Listen for route calculation completion
+    routingControl.on('routesfound', function(e) {
+      const routes = e.routes;
+      const summary = routes[0].summary;
+      const routeDistance = Math.round(summary.totalDistance / 100) / 10; // Convert to km and round to 1 decimal
+      const straightDistance = Math.round(from.distanceTo(to) / 100) / 10; // Straight line distance
+
+      // Remove existing route info if any
+      const existingInfo = document.getElementById('route-info');
+      if (existingInfo) {
+        existingInfo.remove();
+      }
+
+      // Create route info element
+      const info = L.DomUtil.create('div', 'route-info');
+      info.id = 'route-info';
+      info.style.cssText = `
+        position: absolute;
+        bottom: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        z-index: 1000;
+        font-size: 14px;
+        color: #dc2626;
+        font-weight: 500;
+        border: 2px solid #dc2626;
+        backdrop-filter: blur(4px);
+        white-space: nowrap;
+      `;
+      info.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-10 8-14a8 8 0 0 0-16 0c0 4 8 14 8 14z"/>
+            </svg>
+            <span><b>Route:</b> ${routeDistance} km</span>
+          </div>
+          <div style="border-left: 2px solid #f1f1f1; padding-left: 20px; display: flex; align-items: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+            <span><b>Direct:</b> ${straightDistance} km</span>
+          </div>
+        </div>
+      `;
+      map.getContainer().appendChild(info);
+
+      // No need to add floating distance markers
+    });
 
     return () => {
-      map.removeControl(routingControl);
+      // Clean up only the distance info overlay
+      const info = document.getElementById('route-info');
+      if (info) {
+        info.remove();
+      }
     };
   }, [map, from, to]);
 

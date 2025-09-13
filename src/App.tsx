@@ -8,6 +8,7 @@ import MonasteriesList from "./pages/MonasteriesList";
 import MonasteriesMap from "./pages/MonasteriesMap";
 import MonasteryDetail from "./pages/MonasteryDetail";
 import ModelViewer from "./pages/ModelViewer";
+import PlanVisit from "./pages/PlanVisit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/map" element={<MonasteriesMap />} />
           <Route path="/monastery/:id" element={<MonasteryDetail />} />
           <Route path="/model-viewer" element={<ModelViewer />} />
+          <Route path="/plan-visit" element={<PlanVisit />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
