@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Navigation from "@/components/Navigation";
 import LazyModel3D from "@/components/LazyModel3D";
+import MonasteryGallery from "@/components/MonasteryGallery";
+import MonasteryRating from "@/components/MonasteryRating";
+import MonasteryComments from "@/components/MonasteryComments";
 import { AudioControls } from "@/components/AudioControls";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { getMonasteryById } from "@/data/monasteries";
@@ -854,10 +857,44 @@ const MonasteryDetail = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Photo Gallery */}
+              <Card className="soft-shadow">
+                <CardHeader>
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <Camera className="h-6 w-6 text-monastery-gold" />
+                    Sacred Gallery
+                  </CardTitle>
+                  <p className="text-muted-foreground">
+                    Explore stunning photographs of {monastery.name} captured by visitors and pilgrims
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <MonasteryGallery 
+                    monasteryId={monastery.id} 
+                    monasteryName={monastery.name} 
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Visitor Comments Section */}
+              <Card className="soft-shadow mt-8">
+                <CardContent className="p-6">
+                  <MonasteryComments 
+                    monasteryId={monastery.id} 
+                    monasteryName={monastery.name} 
+                  />
+                </CardContent>
+              </Card>
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {/* Visitor Rating */}
+              <MonasteryRating 
+                monasteryId={monastery.id} 
+                monasteryName={monastery.name} 
+              />
               {/* Audio Guide Card */}
               {isSupported && (
                 <Card className="soft-shadow">
