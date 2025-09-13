@@ -3,15 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Mountain, Map, List, Home, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "./LanguageSelector";
 
 const Navigation = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
 
   const navItems = [
-    { path: "/", label: "Home", icon: Home },
-    { path: "/monasteries", label: "Monasteries", icon: List },
-    { path: "/map", label: "Explore Map", icon: Map },
+    { path: "/", label: t('navigation.home'), icon: Home },
+    { path: "/monasteries", label: t('navigation.monasteries'), icon: List },
+    { path: "/map", label: t('navigation.map'), icon: Map },
   ];
 
   const closeSheet = () => setIsOpen(false);
@@ -50,8 +53,9 @@ const Navigation = () => {
             })}
           </div>
 
-          {/* Desktop CTA Button */}
-          <div className="hidden md:block">
+          {/* Desktop Language Selector and CTA Button */}
+          <div className="hidden md:flex items-center gap-3">
+            <LanguageSelector />
             <Button className="bg-gradient-to-r from-blue-600 to-red-600 text-white border border-white/20 hover:border-white/40" size="sm">
               Plan Your Visit
             </Button>
@@ -95,6 +99,13 @@ const Navigation = () => {
                         </Link>
                       );
                     })}
+                  </div>
+
+                  {/* Mobile Language Selector */}
+                  <div className="pt-2 border-t">
+                    <div className="flex justify-center">
+                      <LanguageSelector />
+                    </div>
                   </div>
 
                   {/* Mobile CTA Button */}

@@ -1,5 +1,6 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ interface WeatherDataPoint {
 }
 
 const MonasteryDetail = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
 
   if (!id) {
@@ -95,12 +97,12 @@ const MonasteryDetail = () => {
   };
 
   const accessibilityConfig = {
-    easy: { color: "text-green-600", icon: "🟢", label: "Easy Access" },
-    moderate: { color: "text-yellow-600", icon: "🟡", label: "Moderate Trek" },
+    easy: { color: "text-green-600", icon: "🟢", label: t('monastery.easyAccess') },
+    moderate: { color: "text-yellow-600", icon: "🟡", label: t('monastery.moderateTrek') },
     difficult: {
       color: "text-red-600",
       icon: "🔴",
-      label: "Challenging Journey",
+      label: t('monastery.challengingJourney'),
     },
   };
 
@@ -651,14 +653,14 @@ const MonasteryDetail = () => {
               <Link to="/monasteries">
                 <Button variant="hero" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to All Monasteries
+                  {t('monastery.backToAll')}
                 </Button>
               </Link>
               <Badge
                 variant={monastery.type === "famous" ? "default" : "secondary"}
                 className="bg-background/20 text-monastery-white border-monastery-white/20"
               >
-                {monastery.type} monastery
+                {t(`monastery.${monastery.type}Monastery`)}
               </Badge>
             </div>
 
@@ -675,7 +677,7 @@ const MonasteryDetail = () => {
                 <div className="flex items-center gap-2 mb-3">
                   <Volume2 className="h-5 w-5 text-monastery-white" />
                   <span className="text-monastery-white font-medium">
-                    Audio Guide
+                    {t('monastery.audioGuide')}
                   </span>
                 </div>
                 <AudioControls
@@ -711,10 +713,10 @@ const MonasteryDetail = () => {
                   <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
                       <Volume2 className="h-5 w-5 text-monastery-red" />
-                      Audio Guide
+                      {t('monastery.audioGuide')}
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Listen to a detailed narration about {monastery.name}
+                      {t('monastery.audioGuideDesc', { name: monastery.name })}
                     </p>
                   </CardHeader>
                   <CardContent>
@@ -744,7 +746,7 @@ const MonasteryDetail = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl flex items-center gap-2">
                     <TreePine className="h-6 w-6 text-monastery-red" />
-                    About This Sacred Place
+                    {t('monastery.aboutTitle')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -752,11 +754,11 @@ const MonasteryDetail = () => {
                     {monastery.description}
                   </p>
                   <p className="text-muted-foreground">
-                    Founded in {monastery.founded}, this {monastery.type}{" "}
-                    monastery represents centuries of Buddhist tradition in the
-                    heart of the Himalayas. Located at an altitude of{" "}
-                    {monastery.altitude}, it offers visitors a unique spiritual
-                    experience combined with breathtaking mountain views.
+                    {t('monastery.aboutDesc', { 
+                      founded: monastery.founded, 
+                      type: monastery.type, 
+                      altitude: monastery.altitude 
+                    })}
                   </p>
                 </CardContent>
               </Card>
@@ -766,7 +768,7 @@ const MonasteryDetail = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl flex items-center gap-2">
                     <Star className="h-6 w-6 text-monastery-gold" />
-                    Sacred Features & Highlights
+                    {t('monastery.featuresTitle')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
