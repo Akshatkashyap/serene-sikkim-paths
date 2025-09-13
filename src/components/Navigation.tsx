@@ -27,7 +27,7 @@ const Navigation = () => {
           <Link to="/" className="flex items-center gap-2" onClick={closeSheet}>
             <Mountain className="h-7 w-7 lg:h-8 lg:w-8 text-red-600" />
             <span className="text-lg lg:text-xl font-bold text-foreground">
-              <span className="hidden sm:inline">Sikkim Monasteries</span>
+              <span className="hidden sm:inline">Seek Sikkim</span>
               <span className="sm:hidden">Sikkim</span>
             </span>
           </Link>
