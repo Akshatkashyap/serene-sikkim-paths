@@ -1,15 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Map, List, Home, Menu, X } from "lucide-react";
+import { Map, List, Home, Menu, X, LogOut, User } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
 import { LanguageSelector } from "./LanguageSelector";
 
 const Navigation = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
+  const { isLoggedIn, logout } = useAuth();
 
   const navItems = [
     { path: "/", label: t('navigation.home'), icon: Home },
@@ -18,6 +20,11 @@ const Navigation = () => {
   ];
 
   const closeSheet = () => setIsOpen(false);
+
+  const handleLogout = () => {
+    logout();
+    closeSheet();
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -58,6 +65,25 @@ const Navigation = () => {
             
             {/* Desktop Language Selector */}
             <LanguageSelector />
+            
+            {/* User Status */}
+            {isLoggedIn && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <User className="h-3 w-3" />
+                  <span className="hidden lg:inline">Logged in</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden lg:inline ml-1">Logout</span>
+                </Button>
+              </div>
+            )}
           </div>
 
 
@@ -128,6 +154,24 @@ const Navigation = () => {
                       <LanguageSelector />
                     </div>
                   </div>
+
+                  {/* User Status and Logout */}
+                  {isLoggedIn && (
+                    <div className="pt-2 border-t space-y-3">
+                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                        <User className="h-4 w-4" />
+                        <span>Logged in as demo user</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={handleLogout}
+                        className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </div>
+                  )}
 
                   {/* Mobile CTA Button */}
                   <div className="pt-4 border-t">
