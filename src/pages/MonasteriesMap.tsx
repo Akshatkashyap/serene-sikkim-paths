@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png",
 });
 
-// Custom monastery icon
+// Custom monastery icon (normal)
 const monasteryIcon = new L.Icon({
   iconUrl:
     "data:image/svg+xml;base64," +
@@ -37,6 +37,31 @@ const monasteryIcon = new L.Icon({
   iconSize: [25, 41],
   iconAnchor: [12.5, 41],
   popupAnchor: [0, -41],
+});
+
+// Custom highlighted monastery icon (selected)
+const highlightedMonasteryIcon = new L.Icon({
+  iconUrl:
+    "data:image/svg+xml;base64," +
+    btoa(`
+    <svg width="35" height="55" viewBox="0 0 35 55" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge> 
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <path fill="#059669" stroke="#FFFFFF" stroke-width="3" filter="url(#glow)" d="M17.5 0C7.84 0 0 7.84 0 17.5c0 17.5 17.5 37.5 17.5 37.5s17.5-20 17.5-37.5C35 7.84 27.16 0 17.5 0z"/>
+      <circle fill="#FDE047" cx="17.5" cy="17.5" r="10"/>
+      <path fill="#059669" d="M17.5 9l2.5 5 5 0.5-3.5 3.5 0.5 5-4.5-2.5-4.5 2.5 0.5-5-3.5-3.5 5-0.5z"/>
+    </svg>
+  `),
+  iconSize: [35, 55],
+  iconAnchor: [17.5, 55],
+  popupAnchor: [0, -55],
 });
 
 // Routing Component
@@ -66,8 +91,16 @@ const RoutingMachine = ({ from, to }: { from: L.LatLng; to: L.LatLng }) => {
 };
 
 const MonasteriesMap = () => {
-  const [selectedMonastery, setSelectedMonastery] = useState(monasteries[0]);
-  const [mapCenter] = useState<[number, number]>([27.3333, 88.4333]); // Center of Sikkim
+  const [searchParams] = useSearchParams();
+  const monasteryId = searchParams.get('monastery');
+  
+  // Find the monastery from URL parameter, fallback to first monastery
+  const initialMonastery = monasteryId 
+    ? monasteries.find(m => m.id === monasteryId) || monasteries[0]
+    : monasteries[0];
+    
+  const [selectedMonastery, setSelectedMonastery] = useState(initialMonastery);
+  const [mapCenter] = useState<[number, number]>([27.5, 88.45]); // Better center of Sikkim to show all monasteries
   const [userLocation, setUserLocation] = useState<L.LatLng | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -90,6 +123,7 @@ const MonasteriesMap = () => {
 
   // Handle monastery selection and narration
   const handleMonasterySelect = (monastery: typeof monasteries[0]) => {
+    console.log('Selecting monastery:', monastery.name, 'Previous:', selectedMonastery.name);
     setSelectedMonastery(monastery);
     
     // Auto-narrate when a monastery is selected
@@ -100,8 +134,22 @@ const MonasteriesMap = () => {
     }
   };
 
+  // Update selected monastery when URL parameter changes
+  useEffect(() => {
+    if (monasteryId) {
+      const monastery = monasteries.find(m => m.id === monasteryId);
+      if (monastery && monastery.id !== selectedMonastery.id) {
+        console.log('URL parameter changed, selecting monastery:', monastery.name);
+        setSelectedMonastery(monastery);
+      }
+    }
+  }, [monasteryId, selectedMonastery.id]);
+
   // Narrate selected monastery on load
   useEffect(() => {
+    console.log('Available monasteries:', monasteries.length, monasteries.map(m => m.name));
+    console.log('Selected monastery:', selectedMonastery?.name);
+    
     if (autoNarrationEnabled && isSupported && selectedMonastery) {
       const narrationText = generateMapMarkerNarration(selectedMonastery);
       setTimeout(() => speak(narrationText), 1000);
@@ -138,6 +186,11 @@ const MonasteriesMap = () => {
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">
               Navigate through sacred sites on our interactive map
+              {monasteryId && (
+                <span className="block text-base text-blue-600 font-medium mt-1">
+                  Showing: {selectedMonastery.name}
+                </span>
+              )}
             </p>
 
             {/* Audio Narration Toggle */}
@@ -260,13 +313,18 @@ const MonasteriesMap = () => {
                 <div className="h-[60vh] sm:h-[70vh] lg:h-[600px] xl:h-[700px] w-full">
                   <MapContainer
                     center={mapCenter}
-                    zoom={9}
+                    zoom={8}
                     zoomControl={true}
                     scrollWheelZoom={true}
                     touchZoom={true}
                     doubleClickZoom={true}
                     style={{ height: "100%", width: "100%" }}
                     className="z-0"
+                    bounds={[
+                      [27.0, 88.0], // Southwest corner of Sikkim
+                      [28.2, 88.9]  // Northeast corner of Sikkim
+                    ]}
+                    boundsOptions={{ padding: [20, 20] }}
                   >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -289,13 +347,16 @@ const MonasteriesMap = () => {
                       </Marker>
                     )}
 
-                    {monasteries.map((monastery) => (
+                    {monasteries.map((monastery, index) => (
                       <Marker
                         key={monastery.id}
                         position={monastery.coordinates}
-                        icon={monasteryIcon}
+                        icon={selectedMonastery.id === monastery.id ? highlightedMonasteryIcon : monasteryIcon}
                         eventHandlers={{
-                          click: () => handleMonasterySelect(monastery),
+                          click: () => {
+                            console.log('Marker clicked:', monastery.name);
+                            handleMonasterySelect(monastery);
+                          },
                         }}
                       >
                         <Popup maxWidth={300} minWidth={250}>
@@ -350,7 +411,7 @@ const MonasteriesMap = () => {
 
             {/* Details Panel */}
             <div className="order-1 lg:order-2 space-y-4 lg:space-y-6">
-              <Card className="shadow-lg">
+              <Card className="shadow-lg" key={selectedMonastery.id}>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-xl lg:text-2xl leading-tight">
