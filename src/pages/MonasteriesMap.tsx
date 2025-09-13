@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import Navigation from "@/components/Navigation";
+import TravelHubCard from "@/components/TravelHubCard";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { monasteries } from "@/data/monasteries";
+import { travelHubs } from "@/data/travelHubs";
 import { generateMapMarkerNarration } from "@/data/monasteryNarrations";
-import { MapPin, Mountain, Clock, Navigation as NavigationIcon, Volume2, VolumeX, Car, Bike, PersonStanding } from "lucide-react";
+import { MapPin, Mountain, Clock, Navigation as NavigationIcon, Volume2, VolumeX, Car, Bike, PersonStanding, Plane, Train, Bus } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
@@ -62,6 +64,59 @@ const highlightedMonasteryIcon = new L.Icon({
   iconSize: [35, 55],
   iconAnchor: [17.5, 55],
   popupAnchor: [0, -55],
+});
+
+// Custom travel hub icons
+const airportIcon = new L.Icon({
+  iconUrl:
+    "data:image/svg+xml;base64," +
+    btoa(`
+    <svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#2563EB" stroke="#FFFFFF" stroke-width="2" d="M15 0C8.4 0 3 5.4 3 12c0 12 12 28 12 28s12-16 12-28C27 5.4 21.6 0 15 0z"/>
+      <circle fill="#FFFFFF" cx="15" cy="12" r="8"/>
+      <path fill="#2563EB" d="M15 6l-2 3h-3l1.5 2-1.5 3h3l2 3 2-3h3l-1.5-3 1.5-2h-3z"/>
+    </svg>
+  `),
+  iconSize: [30, 40],
+  iconAnchor: [15, 40],
+  popupAnchor: [0, -40],
+});
+
+const railwayIcon = new L.Icon({
+  iconUrl:
+    "data:image/svg+xml;base64," +
+    btoa(`
+    <svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#059669" stroke="#FFFFFF" stroke-width="2" d="M15 0C8.4 0 3 5.4 3 12c0 12 12 28 12 28s12-16 12-28C27 5.4 21.6 0 15 0z"/>
+      <circle fill="#FFFFFF" cx="15" cy="12" r="8"/>
+      <rect fill="#059669" x="11" y="8" width="8" height="8" rx="1"/>
+      <circle fill="#FFFFFF" cx="13" cy="10" r="1"/>
+      <circle fill="#FFFFFF" cx="17" cy="10" r="1"/>
+      <circle fill="#FFFFFF" cx="13" cy="14" r="1"/>
+      <circle fill="#FFFFFF" cx="17" cy="14" r="1"/>
+    </svg>
+  `),
+  iconSize: [30, 40],
+  iconAnchor: [15, 40],
+  popupAnchor: [0, -40],
+});
+
+const busStationIcon = new L.Icon({
+  iconUrl:
+    "data:image/svg+xml;base64+" +
+    btoa(`
+    <svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#EA580C" stroke="#FFFFFF" stroke-width="2" d="M15 0C8.4 0 3 5.4 3 12c0 12 12 28 12 28s12-16 12-28C27 5.4 21.6 0 15 0z"/>
+      <circle fill="#FFFFFF" cx="15" cy="12" r="8"/>
+      <rect fill="#EA580C" x="10" y="8" width="10" height="8" rx="2"/>
+      <rect fill="#FFFFFF" x="11" y="9" width="8" height="4"/>
+      <circle fill="#EA580C" cx="12" cy="15" r="1"/>
+      <circle fill="#EA580C" cx="18" cy="15" r="1"/>
+    </svg>
+  `),
+  iconSize: [30, 40],
+  iconAnchor: [15, 40],
+  popupAnchor: [0, -40],
 });
 
 // Routing Component
@@ -342,6 +397,8 @@ const MonasteriesMap = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [autoNarrationEnabled, setAutoNarrationEnabled] = useState(true);
+  const [selectedTravelHub, setSelectedTravelHub] = useState<typeof travelHubs[0] | null>(null);
+  const [showTravelHubs, setShowTravelHubs] = useState(true);
   const [routeHoverInfo, setRouteHoverInfo] = useState<{
     distance: string;
     time: string;
@@ -751,6 +808,84 @@ const MonasteriesMap = () => {
                         </Popup>
                       </Marker>
                     ))}
+
+                    {/* Travel Hub Markers */}
+                    {showTravelHubs && travelHubs.map((hub) => {
+                      const getHubIcon = () => {
+                        switch (hub.type) {
+                          case 'airport':
+                            return airportIcon;
+                          case 'railway':
+                            return railwayIcon;
+                          case 'bus_station':
+                            return busStationIcon;
+                          default:
+                            return airportIcon;
+                        }
+                      };
+
+                      return (
+                        <Marker
+                          key={hub.id}
+                          position={hub.coordinates}
+                          icon={getHubIcon()}
+                          eventHandlers={{
+                            click: () => {
+                              setSelectedTravelHub(hub);
+                            },
+                          }}
+                        >
+                          <Popup maxWidth={400} minWidth={350}>
+                            <div className="p-3">
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="text-xl">
+                                  {hub.type === 'airport' && '✈️'}
+                                  {hub.type === 'railway' && '🚂'}
+                                  {hub.type === 'bus_station' && '🚌'}
+                                </div>
+                                <div>
+                                  <h3 className="font-semibold text-lg">{hub.name}</h3>
+                                  <p className="text-sm text-gray-600">{hub.description}</p>
+                                </div>
+                              </div>
+
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="bg-blue-50 p-2 rounded text-center">
+                                    <div className="text-xs font-medium text-blue-700">To Gangtok</div>
+                                    <div className="text-sm font-semibold">3-6 hours</div>
+                                  </div>
+                                  <div className="bg-green-50 p-2 rounded text-center">
+                                    <div className="text-xs font-medium text-green-700">Cost Range</div>
+                                    <div className="text-sm font-semibold">₹120-4000</div>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <h4 className="font-medium text-sm">Transportation Options:</h4>
+                                  {hub.services.slice(0, 3).map((service, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm">{service.icon}</span>
+                                        <span className="text-xs font-medium">{service.name}</span>
+                                      </div>
+                                      <div className="text-xs text-gray-600">{service.costRange}</div>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <button
+                                  onClick={() => setSelectedTravelHub(hub)}
+                                  className="w-full bg-blue-600 text-white py-2 px-3 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
+                                >
+                                  View All Options
+                                </button>
+                              </div>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      );
+                    })}
                   </MapContainer>
                 </div>
               </div>
@@ -868,6 +1003,57 @@ const MonasteriesMap = () => {
                       View Full Details
                     </Button>
                   </Link>
+                </CardContent>
+              </Card>
+
+              {/* Travel Hubs Controls */}
+              <Card className="shadow-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Plane className="h-5 w-5 text-blue-600" />
+                    Travel Hubs
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Show on Map</span>
+                    <Button
+                      variant={showTravelHubs ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setShowTravelHubs(!showTravelHubs)}
+                    >
+                      {showTravelHubs ? "Hide" : "Show"}
+                    </Button>
+                  </div>
+
+                  {showTravelHubs && (
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                            <Plane className="h-3 w-3 text-white" />
+                          </div>
+                          <span className="text-sm">Bagdogra Airport</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                            <Train className="h-3 w-3 text-white" />
+                          </div>
+                          <span className="text-sm">Siliguri Junction</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 bg-orange-600 rounded-full flex items-center justify-center">
+                            <Bus className="h-3 w-3 text-white" />
+                          </div>
+                          <span className="text-sm">Bus Terminals</span>
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded">
+                        💡 Click on any travel hub marker for transportation options and pricing
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -991,6 +1177,27 @@ const MonasteriesMap = () => {
                     </div>
                   </CardContent>
                 </Card>
+              )}
+
+              {/* Selected Travel Hub Details */}
+              {selectedTravelHub && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[10000]">
+                  <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+                    <div className="p-4 border-b flex items-center justify-between">
+                      <h2 className="text-xl font-bold">Travel Hub Details</h2>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTravelHub(null)}
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                    <div className="p-4">
+                      <TravelHubCard hub={selectedTravelHub} />
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>

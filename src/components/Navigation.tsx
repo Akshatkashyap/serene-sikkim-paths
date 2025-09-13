@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Mountain, Map, List, Home, Menu, X } from "lucide-react";
+import { Map, List, Home, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "./LanguageSelector";
@@ -25,7 +25,11 @@ const Navigation = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2" onClick={closeSheet}>
-            <Mountain className="h-7 w-7 lg:h-8 lg:w-8 text-red-600" />
+            <img 
+              src="/icon.png" 
+              alt="Seek Sikkim Logo" 
+              className="h-7 w-7 lg:h-10 lg:w-10 object-contain"
+            />
             <span className="text-lg lg:text-xl font-bold text-foreground">
               <span className="hidden sm:inline">Seek Sikkim</span>
               <span className="sm:hidden">Sikkim</span>
@@ -87,7 +91,11 @@ const Navigation = () => {
                 <div className="flex flex-col space-y-6 mt-6">
                   {/* Mobile Logo */}
                   <Link to="/" className="flex items-center gap-2 pb-4 border-b" onClick={closeSheet}>
-                    <Mountain className="h-6 w-6 text-red-600" />
+                    <img 
+                      src="/icon.png" 
+                      alt="Seek Sikkim Logo" 
+                      className="h-6 w-6 object-contain"
+                    />
                     <span className="text-lg font-bold text-foreground">
                       Sikkim Monasteries
                     </span>
