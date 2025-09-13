@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ import Navigation from "@/components/Navigation";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { monasteries } from "@/data/monasteries";
 import { generateMapMarkerNarration } from "@/data/monasteryNarrations";
-import { MapPin, Mountain, Clock, Navigation as NavigationIcon, Volume2, VolumeX } from "lucide-react";
+import { MapPin, Mountain, Clock, Navigation as NavigationIcon, Volume2, VolumeX, Car, Bike, PersonStanding } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
@@ -23,7 +23,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png",
 });
 
-// Custom monastery icon
+// Custom monastery icon (normal)
 const monasteryIcon = new L.Icon({
   iconUrl:
     "data:image/svg+xml;base64," +
@@ -37,6 +37,31 @@ const monasteryIcon = new L.Icon({
   iconSize: [25, 41],
   iconAnchor: [12.5, 41],
   popupAnchor: [0, -41],
+});
+
+// Custom highlighted monastery icon (selected)
+const highlightedMonasteryIcon = new L.Icon({
+  iconUrl:
+    "data:image/svg+xml;base64," +
+    btoa(`
+    <svg width="35" height="55" viewBox="0 0 35 55" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge> 
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <path fill="#059669" stroke="#FFFFFF" stroke-width="3" filter="url(#glow)" d="M17.5 0C7.84 0 0 7.84 0 17.5c0 17.5 17.5 37.5 17.5 37.5s17.5-20 17.5-37.5C35 7.84 27.16 0 17.5 0z"/>
+      <circle fill="#FDE047" cx="17.5" cy="17.5" r="10"/>
+      <path fill="#059669" d="M17.5 9l2.5 5 5 0.5-3.5 3.5 0.5 5-4.5-2.5-4.5 2.5 0.5-5-3.5-3.5 5-0.5z"/>
+    </svg>
+  `),
+  iconSize: [35, 55],
+  iconAnchor: [17.5, 55],
+  popupAnchor: [0, -55],
 });
 
 // Routing Component
@@ -135,13 +160,194 @@ const RoutingMachine = ({ from, to }: { from: L.LatLng; to: L.LatLng }) => {
   return null;
 };
 
+// New component for monastery-to-monastery routing with hover info
+const MonasteryRoutingMachine = ({ 
+  from, 
+  to, 
+  onRouteHover, 
+  onRouteHoverEnd 
+}: { 
+  from: L.LatLng; 
+  to: L.LatLng;
+  onRouteHover: (info: { distance: string; time: string; mouseEvent: MouseEvent }) => void;
+  onRouteHoverEnd: () => void;
+}) => {
+  const map = useMap();
+  const routingControlRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!map) return;
+
+    const routingControl = L.Routing.control({
+      waypoints: [from, to],
+      lineOptions: {
+        styles: [{ color: "#059669", weight: 4, dashArray: "10, 10" }],
+        extendToWaypoints: true,
+        missingRouteTolerance: 0,
+      },
+      show: false,
+      addWaypoints: false,
+      createMarker: () => null, // Don't create markers
+    }).addTo(map);
+
+    routingControlRef.current = routingControl;
+
+    // Add hover events to the route line
+    routingControl.on('routesfound', function(e) {
+      const routes = e.routes;
+      const route = routes[0];
+      
+      // Wait a bit for the line to be created
+      setTimeout(() => {
+        const routeLine = routingControl._line;
+        if (routeLine) {
+          routeLine.on('mouseover', function(event: any) {
+            const distance = (route.summary.totalDistance / 1000).toFixed(1); // km
+            const timeInHours = (route.summary.totalTime / 3600).toFixed(1); // hours
+            
+            onRouteHover({
+              distance: distance,
+              time: timeInHours,
+              mouseEvent: event.originalEvent
+            });
+          });
+
+          routeLine.on('mouseout', function() {
+            onRouteHoverEnd();
+          });
+
+          routeLine.on('mousemove', function(event: any) {
+            const distance = (route.summary.totalDistance / 1000).toFixed(1); // km
+            const timeInHours = (route.summary.totalTime / 3600).toFixed(1); // hours
+            
+            onRouteHover({
+              distance: distance,
+              time: timeInHours,
+              mouseEvent: event.originalEvent
+            });
+          });
+        }
+      }, 500);
+    });
+
+    return () => {
+      if (routingControlRef.current) {
+        map.removeControl(routingControlRef.current);
+      }
+    };
+  }, [map, from, to, onRouteHover, onRouteHoverEnd]);
+
+  return null;
+};
+
+// Helper function to calculate distance between two coordinates
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distance in kilometers
+};
+
+// Helper function to find nearest monastery
+const findNearestMonastery = (currentMonastery: typeof monasteries[0], allMonasteries: typeof monasteries): typeof monasteries[0] | null => {
+  let nearest = null;
+  let minDistance = Infinity;
+
+  for (const monastery of allMonasteries) {
+    if (monastery.id === currentMonastery.id) continue; // Skip the same monastery
+
+    const distance = calculateDistance(
+      currentMonastery.coordinates[0],
+      currentMonastery.coordinates[1],
+      monastery.coordinates[0],
+      monastery.coordinates[1]
+    );
+
+    if (distance < minDistance) {
+      minDistance = distance;
+      nearest = monastery;
+    }
+  }
+
+  return nearest;
+};
+
+// Helper function to calculate estimated travel time (in hours)
+const calculateTravelTime = (distanceKm: number): number => {
+  // Estimate based on mountain terrain: 30-40 km/h average speed
+  const averageSpeed = 35; // km/h for mountain roads
+  return distanceKm / averageSpeed;
+};
+
+// Helper function to calculate estimated travel times for different modes
+const calculateTravelTimes = (distanceKm: number) => {
+  return {
+    car: {
+      time: distanceKm / 35, // 35 km/h average for mountain roads
+      label: "Car/Taxi",
+      icon: Car,
+      color: "text-blue-600"
+    },
+    bike: {
+      time: distanceKm / 15, // 15 km/h average for cycling in mountains
+      label: "Bicycle", 
+      icon: Bike,
+      color: "text-green-600"
+    },
+    walking: {
+      time: distanceKm / 4, // 4 km/h average walking speed in mountains
+      label: "Walking",
+      icon: PersonStanding, 
+      color: "text-orange-600"
+    }
+  };
+};
+
+// Helper function to format time duration
+const formatTime = (hours: number): string => {
+  if (hours < 1) {
+    return `${Math.round(hours * 60)}min`;
+  } else if (hours < 24) {
+    const wholeHours = Math.floor(hours);
+    const minutes = Math.round((hours - wholeHours) * 60);
+    return minutes > 0 ? `${wholeHours}h ${minutes}min` : `${wholeHours}h`;
+  } else {
+    const days = Math.floor(hours / 24);
+    const remainingHours = Math.round(hours % 24);
+    return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
+  }
+};
+
 const MonasteriesMap = () => {
-  const [selectedMonastery, setSelectedMonastery] = useState(monasteries[0]);
-  const [mapCenter] = useState<[number, number]>([27.3333, 88.4333]); // Center of Sikkim
+  const [searchParams] = useSearchParams();
+  const monasteryId = searchParams.get('monastery');
+  
+  // Find the monastery from URL parameter, fallback to first monastery
+  const initialMonastery = monasteryId 
+    ? monasteries.find(m => m.id === monasteryId) || monasteries[0]
+    : monasteries[0];
+    
+  const [selectedMonastery, setSelectedMonastery] = useState(initialMonastery);
+  const [mapCenter] = useState<[number, number]>([27.5, 88.45]); // Better center of Sikkim to show all monasteries
   const [userLocation, setUserLocation] = useState<L.LatLng | null>(null);
+  const [nearestMonasteryRoute, setNearestMonasteryRoute] = useState<{
+    from: typeof monasteries[0];
+    to: typeof monasteries[0];
+  } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [autoNarrationEnabled, setAutoNarrationEnabled] = useState(true);
+  const [routeHoverInfo, setRouteHoverInfo] = useState<{
+    distance: string;
+    time: string;
+    position: { x: number; y: number };
+  } | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
 
   // Text-to-speech hook for map markers
   const {
@@ -160,7 +366,19 @@ const MonasteriesMap = () => {
 
   // Handle monastery selection and narration
   const handleMonasterySelect = (monastery: typeof monasteries[0]) => {
+    console.log('Selecting monastery:', monastery.name, 'Previous:', selectedMonastery.name);
     setSelectedMonastery(monastery);
+    
+    // Find and set route to nearest monastery
+    const nearestMonastery = findNearestMonastery(monastery, monasteries);
+    if (nearestMonastery) {
+      setNearestMonasteryRoute({
+        from: monastery,
+        to: nearestMonastery
+      });
+    } else {
+      setNearestMonasteryRoute(null);
+    }
     
     // Auto-narrate when a monastery is selected
     if (autoNarrationEnabled && isSupported) {
@@ -170,8 +388,22 @@ const MonasteriesMap = () => {
     }
   };
 
+  // Update selected monastery when URL parameter changes
+  useEffect(() => {
+    if (monasteryId) {
+      const monastery = monasteries.find(m => m.id === monasteryId);
+      if (monastery && monastery.id !== selectedMonastery.id) {
+        console.log('URL parameter changed, selecting monastery:', monastery.name);
+        setSelectedMonastery(monastery);
+      }
+    }
+  }, [monasteryId, selectedMonastery.id]);
+
   // Narrate selected monastery on load
   useEffect(() => {
+    console.log('Available monasteries:', monasteries.length, monasteries.map(m => m.name));
+    console.log('Selected monastery:', selectedMonastery?.name);
+    
     if (autoNarrationEnabled && isSupported && selectedMonastery) {
       const narrationText = generateMapMarkerNarration(selectedMonastery);
       setTimeout(() => speak(narrationText), 1000);
@@ -196,6 +428,22 @@ const MonasteriesMap = () => {
     setIsSearching(false);
   };
 
+  // Handle route hover with mouse position
+  const handleRouteHover = (info: { distance: string; time: string; mouseEvent: MouseEvent }) => {
+    setRouteHoverInfo({
+      distance: info.distance,
+      time: info.time,
+      position: {
+        x: info.mouseEvent.clientX,
+        y: info.mouseEvent.clientY
+      }
+    });
+  };
+
+  const handleRouteHoverEnd = () => {
+    setRouteHoverInfo(null);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -208,6 +456,11 @@ const MonasteriesMap = () => {
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">
               Navigate through sacred sites on our interactive map
+              {monasteryId && (
+                <span className="block text-base text-blue-600 font-medium mt-1">
+                  Showing: {selectedMonastery.name}
+                </span>
+              )}
             </p>
 
             {/* Audio Narration Toggle */}
@@ -325,18 +578,23 @@ const MonasteriesMap = () => {
           {/* Responsive Layout */}
           <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Map Section */}
-            <div className="lg:col-span-2 order-2 lg:order-1">
+            <div className="lg:col-span-2 order-2 lg:order-1 relative" ref={mapContainerRef}>
               <div className="shadow-lg rounded-lg overflow-hidden bg-white">
                 <div className="h-[60vh] sm:h-[70vh] lg:h-[600px] xl:h-[700px] w-full">
                   <MapContainer
                     center={mapCenter}
-                    zoom={9}
+                    zoom={8}
                     zoomControl={true}
                     scrollWheelZoom={true}
                     touchZoom={true}
                     doubleClickZoom={true}
                     style={{ height: "100%", width: "100%" }}
                     className="z-0"
+                    bounds={[
+                      [27.0, 88.0], // Southwest corner of Sikkim
+                      [28.2, 88.9]  // Northeast corner of Sikkim
+                    ]}
+                    boundsOptions={{ padding: [20, 20] }}
                   >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -353,22 +611,40 @@ const MonasteriesMap = () => {
                       />
                     )}
 
+                    {nearestMonasteryRoute && (
+                      <MonasteryRoutingMachine
+                        from={L.latLng(
+                          nearestMonasteryRoute.from.coordinates[0],
+                          nearestMonasteryRoute.from.coordinates[1]
+                        )}
+                        to={L.latLng(
+                          nearestMonasteryRoute.to.coordinates[0],
+                          nearestMonasteryRoute.to.coordinates[1]
+                        )}
+                        onRouteHover={handleRouteHover}
+                        onRouteHoverEnd={handleRouteHoverEnd}
+                      />
+                    )}
+
                     {userLocation && (
                       <Marker position={userLocation}>
                         <Popup>Your Location</Popup>
                       </Marker>
                     )}
 
-                    {monasteries.map((monastery) => (
+                    {monasteries.map((monastery, index) => (
                       <Marker
                         key={monastery.id}
                         position={monastery.coordinates}
-                        icon={monasteryIcon}
+                        icon={selectedMonastery.id === monastery.id ? highlightedMonasteryIcon : monasteryIcon}
                         eventHandlers={{
-                          click: () => handleMonasterySelect(monastery),
+                          click: () => {
+                            console.log('Marker clicked:', monastery.name);
+                            handleMonasterySelect(monastery);
+                          },
                         }}
                       >
-                        <Popup maxWidth={300} minWidth={250}>
+                        <Popup maxWidth={350} minWidth={300}>
                           <div className="p-2">
                             <div className="flex items-start justify-between mb-2">
                               <h3 className="font-semibold text-lg">
@@ -397,6 +673,68 @@ const MonasteriesMap = () => {
                             <p className="text-sm text-gray-600 mb-3">
                               {monastery.description.substring(0, 100)}...
                             </p>
+
+                            {/* Show nearest monastery route info if this monastery has one */}
+                            {nearestMonasteryRoute && nearestMonasteryRoute.from.id === monastery.id && (
+                              <div className="mb-3 p-2 bg-green-50 rounded border border-green-200">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <NavigationIcon className="h-4 w-4 text-green-600" />
+                                  <span className="text-sm font-semibold text-green-700">
+                                    Route to Nearest: {nearestMonasteryRoute.to.name}
+                                  </span>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 mb-2">
+                                  <MapPin className="h-3 w-3 text-blue-600" />
+                                  <span className="text-xs font-medium">
+                                    Distance: {calculateDistance(
+                                      nearestMonasteryRoute.from.coordinates[0],
+                                      nearestMonasteryRoute.from.coordinates[1],
+                                      nearestMonasteryRoute.to.coordinates[0],
+                                      nearestMonasteryRoute.to.coordinates[1]
+                                    ).toFixed(1)} km
+                                  </span>
+                                </div>
+
+                                {/* Transportation Modes - Compact Version */}
+                                <div className="space-y-1">
+                                  <h5 className="text-xs font-semibold text-gray-600">Travel Times:</h5>
+                                  {Object.values(calculateTravelTimes(
+                                    calculateDistance(
+                                      nearestMonasteryRoute.from.coordinates[0],
+                                      nearestMonasteryRoute.from.coordinates[1],
+                                      nearestMonasteryRoute.to.coordinates[0],
+                                      nearestMonasteryRoute.to.coordinates[1]
+                                    )
+                                  )).map((mode, index) => {
+                                    const IconComponent = mode.icon;
+                                    return (
+                                      <div key={index} className="flex items-center justify-between bg-white rounded px-2 py-1">
+                                        <div className="flex items-center gap-1">
+                                          <IconComponent className={`h-3 w-3 ${mode.color}`} />
+                                          <span className="text-xs">{mode.label}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="h-2 w-2 text-gray-400" />
+                                          <span className="text-xs font-medium">
+                                            {formatTime(mode.time)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                {/* Terrain Note - Compact */}
+                                <div className="mt-2 flex items-start gap-1">
+                                  <Mountain className="h-3 w-3 text-blue-500 mt-0.5 shrink-0" />
+                                  <span className="text-xs text-blue-600">
+                                    Mountain terrain - times may vary with weather
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
                             <div className="flex gap-2">
                               <Link to={`/monastery/${monastery.id}`} className="flex-1">
                                 <button className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm">
@@ -416,11 +754,53 @@ const MonasteriesMap = () => {
                   </MapContainer>
                 </div>
               </div>
+
+              {/* Route Hover Info Card - Fixed positioning */}
+              {routeHoverInfo && (
+                <div 
+                  className="fixed z-[9999] pointer-events-none"
+                  style={{
+                    left: `${routeHoverInfo.position.x + 10}px`,
+                    top: `${routeHoverInfo.position.y - 80}px`,
+                    transform: 'translate(0, 0)'
+                  }}
+                >
+                  <Card className="shadow-xl border-2 border-green-400 bg-white/98 backdrop-blur-sm min-w-[200px]">
+                    <CardContent className="p-3">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 bg-green-600 rounded-full animate-pulse"></div>
+                          <span className="text-sm font-semibold text-green-700">
+                            Route Info
+                          </span>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm">
+                              <strong>{routeHoverInfo.distance} km</strong>
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-orange-600" />
+                            <span className="text-sm">
+                              <strong>{routeHoverInfo.time}h</strong> est.
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500 border-t pt-1">
+                            Mountain terrain
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </div>
 
             {/* Details Panel */}
             <div className="order-1 lg:order-2 space-y-4 lg:space-y-6">
-              <Card className="shadow-lg">
+              <Card className="shadow-lg" key={selectedMonastery.id}>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-xl lg:text-2xl leading-tight">
@@ -505,6 +885,14 @@ const MonasteriesMap = () => {
                       <span className="text-sm">Monastery Location</span>
                     </div>
                     <div className="flex items-center gap-3">
+                      <div className="w-6 h-1 bg-red-600"></div>
+                      <span className="text-sm">Route to/from your location</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-1 bg-green-600" style={{ borderTop: "2px dashed #059669" }}></div>
+                      <span className="text-sm">Route to nearest monastery (hover for info)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
                       <Badge variant="default">Famous</Badge>
                       <span className="text-sm">Well-known monasteries</span>
                     </div>
@@ -515,6 +903,95 @@ const MonasteriesMap = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {nearestMonasteryRoute && (
+                <Card className="shadow-lg border-green-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg text-green-700">Nearest Monastery Route</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <p className="text-sm">
+                          <strong>From:</strong> {nearestMonasteryRoute.from.name}
+                        </p>
+                        <p className="text-sm">
+                          <strong>To:</strong> {nearestMonasteryRoute.to.name}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium">
+                            Distance: {calculateDistance(
+                              nearestMonasteryRoute.from.coordinates[0],
+                              nearestMonasteryRoute.from.coordinates[1],
+                              nearestMonasteryRoute.to.coordinates[0],
+                              nearestMonasteryRoute.to.coordinates[1]
+                            ).toFixed(1)} km
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Transportation Modes */}
+                      <div className="border-t pt-3">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3">Travel Time Options:</h4>
+                        <div className="space-y-2">
+                          {Object.values(calculateTravelTimes(
+                            calculateDistance(
+                              nearestMonasteryRoute.from.coordinates[0],
+                              nearestMonasteryRoute.from.coordinates[1],
+                              nearestMonasteryRoute.to.coordinates[0],
+                              nearestMonasteryRoute.to.coordinates[1]
+                            )
+                          )).map((mode, index) => {
+                            const IconComponent = mode.icon;
+                            return (
+                              <div key={index} className="flex items-center justify-between bg-gray-50 rounded-lg p-2">
+                                <div className="flex items-center gap-2">
+                                  <IconComponent className={`h-4 w-4 ${mode.color}`} />
+                                  <span className="text-sm font-medium">{mode.label}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3 text-gray-500" />
+                                  <span className="text-sm font-semibold text-gray-700">
+                                    {formatTime(mode.time)}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Additional Info */}
+                      <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                        <div className="flex items-start gap-2">
+                          <Mountain className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                          <div className="text-xs text-blue-700">
+                            <p className="font-medium mb-1">Mountain Terrain Notes:</p>
+                            <ul className="space-y-0.5 text-xs">
+                              <li>• Times may vary due to weather conditions</li>
+                              <li>• Consider altitude and road conditions</li>
+                              <li>• Best to travel during daylight hours</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground">
+                          Hover over the green dashed line for real-time route details
+                        </p>
+                        <Link to={`/monastery/${nearestMonasteryRoute.to.id}`}>
+                          <Button variant="outline" size="sm" className="w-full">
+                            <NavigationIcon className="h-4 w-4 mr-2" />
+                            View Nearest Monastery Details
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>

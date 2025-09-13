@@ -3,15 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Mountain, Map, List, Home, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "./LanguageSelector";
 
 const Navigation = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
 
   const navItems = [
-    { path: "/", label: "Home", icon: Home },
-    { path: "/monasteries", label: "Monasteries", icon: List },
-    { path: "/map", label: "Explore Map", icon: Map },
+    { path: "/", label: t('navigation.home'), icon: Home },
+    { path: "/monasteries", label: t('navigation.monasteries'), icon: List },
+    { path: "/map", label: t('navigation.map'), icon: Map },
   ];
 
   const closeSheet = () => setIsOpen(false);
@@ -24,7 +27,7 @@ const Navigation = () => {
           <Link to="/" className="flex items-center gap-2" onClick={closeSheet}>
             <Mountain className="h-7 w-7 lg:h-8 lg:w-8 text-red-600" />
             <span className="text-lg lg:text-xl font-bold text-foreground">
-              <span className="hidden sm:inline">Sikkim Monasteries</span>
+              <span className="hidden sm:inline">Seek Sikkim</span>
               <span className="sm:hidden">Sikkim</span>
             </span>
           </Link>
@@ -50,6 +53,7 @@ const Navigation = () => {
             })}
           </div>
 
+
           {/* Desktop CTA Button */}
           <div className="hidden md:block">
             <Link to="/plan-visit">
@@ -63,6 +67,7 @@ const Navigation = () => {
                 Plan Your Visit
               </Button>
             </Link>
+
           </div>
 
 
@@ -104,6 +109,13 @@ const Navigation = () => {
                         </Link>
                       );
                     })}
+                  </div>
+
+                  {/* Mobile Language Selector */}
+                  <div className="pt-2 border-t">
+                    <div className="flex justify-center">
+                      <LanguageSelector />
+                    </div>
                   </div>
 
                   {/* Mobile CTA Button */}

@@ -10,6 +10,7 @@ import MonasteryDetail from "./pages/MonasteryDetail";
 import ModelViewer from "./pages/ModelViewer";
 import PlanVisit from "./pages/PlanVisit";
 import NotFound from "./pages/NotFound";
+import './i18n';
 
 const queryClient = new QueryClient();
 
