@@ -225,7 +225,7 @@ const MonasteriesList = () => {
                         Learn More
                       </Button>
                     </Link>
-                    <Link to="/map">
+                    <Link to={`/map?monastery=${monastery.id}`}>
                       <Button variant="outline" size="sm">
                         <MapPin className="h-4 w-4" />
                       </Button>

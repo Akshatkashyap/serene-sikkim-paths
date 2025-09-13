@@ -408,7 +408,7 @@ const MonasteryDetail = () => {
                   <CardTitle className="text-xl">Plan Your Visit</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Link to="/map">
+                  <Link to={`/map?monastery=${monastery.id}`}>
                     <Button variant="monastery" className="w-full">
                       <NavigationIcon className="h-4 w-4 mr-2" />
                       View on Map
