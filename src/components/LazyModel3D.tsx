@@ -5,12 +5,13 @@ const LazyModel3D = lazy(() => import('./Model3D'));
 
 interface LazyModel3DWrapperProps {
   modelPath: string;
+  monasteryId?: string;
   className?: string;
 }
 
 function Model3DLoadingFallback() {
   return (
-    <div className="w-full h-96 bg-gradient-to-br from-monastery-red/5 to-mountain-blue/5 rounded-lg flex items-center justify-center">
+    <div className="w-full h-[500px] bg-gradient-to-br from-monastery-red/5 to-mountain-blue/5 rounded-lg flex items-center justify-center">
       <div className="text-center space-y-4">
         <div className="relative">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-monastery-red/20 border-t-monastery-red mx-auto"></div>
@@ -34,10 +35,10 @@ function Model3DLoadingFallback() {
   );
 }
 
-const LazyModel3DWrapper: React.FC<LazyModel3DWrapperProps> = ({ modelPath, className }) => {
+const LazyModel3DWrapper: React.FC<LazyModel3DWrapperProps> = ({ modelPath, monasteryId, className }) => {
   return (
     <Suspense fallback={<Model3DLoadingFallback />}>
-      <LazyModel3D modelPath={modelPath} className={className} />
+      <LazyModel3D modelPath={modelPath} monasteryId={monasteryId} className={className} />
     </Suspense>
   );
 };
