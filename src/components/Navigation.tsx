@@ -51,6 +51,9 @@ const Navigation = () => {
                 </Link>
               );
             })}
+            
+            {/* Desktop Language Selector */}
+            <LanguageSelector />
           </div>
 
 
